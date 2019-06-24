@@ -5,20 +5,22 @@ object DataSources extends App {
   val spark = SparkSession.builder().appName("TestApp").master("local[*]").getOrCreate()
 
   //Text file
-  val employeeDf = spark.read.textFile("employee.txt")
+  val employeeDf = spark
+    .read
+    .textFile("employee.txt")
 
   //Json
-  val employeeDf1 = spark.read.format("json").load("employee.json")
-
+  val employeeDf1 = spark
+    .read
+    .format("json")
+    .load("employee.json")
 
   //parquet
   employeeDf.write
     .mode(SaveMode.Ignore)
     .save("employee.parquet")
 
-  val usersDF = spark.read
-    .load("employee.parquet")
-
+  val usersDF = spark.read.load("employee.parquet")
 
   //Csv
   val employeeDFCsv = spark.read.format("csv")

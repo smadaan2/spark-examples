@@ -7,21 +7,23 @@ object DatasetApp extends App {
 
 //////////////// Dataset Operations
 
-  val textFileData = ss.read.textFile("testfile.txt")
+  val textFileData: Dataset[String] = ss.read.textFile("testfile.txt")
   textFileData.filter(s => s.contains("spark")).foreach(s => println(s))
 
   val primitiveDS: Dataset[Int] =  (Seq(1, 2, 3)).toDS()
   primitiveDS.map(_ + 1).foreach(s => println(s))
 
   val empDF: Dataset[Employee] = ss.read
-    .option("multiline", true).option("mode", "PERMISSIVE")
-    .json("employee.json").as[Employee]
+    .option("multiline", true)
+    .option("mode", "PERMISSIVE")
+    .json("employee.json")
+    .as[Employee]
 
   empDF.show()
 
   //Inferring the Schema Using Reflection
 
-  val peopleDF = ss.read
+  val peopleDF: Dataset[Employee] = ss.read
     .textFile("employee.txt")
     .map(_.split(","))
     .map(attributes => Employee(attributes(0),attributes(1).trim.toInt,attributes(2)))
@@ -38,10 +40,10 @@ object DatasetApp extends App {
 
 
   // row.getValuesMap[T] retrieves multiple columns at once into a Map[String, T]
-  implicit def mapEncoder = org.apache.spark.sql.Encoders.kryo[Map[String, Any]]
-  teenagersDF.map(teenager => teenager.getValuesMap[Any](List("name", "rollno"))).collect().foreach(println)
+//  implicit def mapEncoder = org.apache.spark.sql.Encoders.kryo[Map[String, Any]]
+//  teenagersDF.map(teenager => teenager.getValuesMap[Any](List("name", "rollno"))).foreach(s => println(s))
 
 }
 
 
-case class Employee(name: String, rollno: Long, address: String)
+case class Employee(name: String, rollno: Double, address: String)

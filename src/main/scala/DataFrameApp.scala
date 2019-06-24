@@ -1,19 +1,15 @@
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.{Column, DataFrame, SparkSession}
+import org.apache.spark.sql.functions._
+
+import scala.util.{Failure, Success, Try}
 
 object DataFrameApp {
 
   def main(args: Array[String]): Unit = {
 
-    //creates a DataFrame based on the content of a JSON file
-
     val ss = SparkSession.builder().appName("TestApp").master("local[*]").getOrCreate()
-
-    val empDF: DataFrame = ss.read
-      .option("multiline", true).option("mode", "PERMISSIVE")
-      .json("employee.json")
-
-    empDF.show()
-
+    
     val empCsvDF: DataFrame = ss.read
       .option("inferSchema", "true")
       .option("sep", ",")
@@ -24,28 +20,33 @@ object DataFrameApp {
 
     empCsvDF.show()
 
-
-    empDF.select("name").show()
+    empCsvDF.select("name","rollno").show()
 
     import ss.implicits._
 
-    empDF.select($"name", $"rollno"+ 1).show()
+    empCsvDF.select($"name".as[String], ($"rollno"+ 1).as("newrollno")).show()
 
-    empDF.filter($"rollno" > 788).show()
+    empCsvDF.filter($"rollno" === 788).show()
 
-    empDF.groupBy("name").count().show()
+    empCsvDF.filter("rollno == 788").show()
 
-    empDF.createOrReplaceTempView("employee")
+    empCsvDF.where($"rollno" === 788).show()
+
+    empCsvDF.filter($"rollno".equalTo(788)).show()
+
+    empCsvDF.groupBy("name").count().show()
+
+    empCsvDF.createOrReplaceTempView("employee")
 
     ss.sql("Select * from employee").show()
 
-    empDF.createGlobalTempView("employeeG")
+    empCsvDF.createGlobalTempView("employeeG")
 
     ss.sql("Select * from global_temp.employeeG").show()
 
     ss.newSession().sql("SELECT * FROM global_temp.employeeG").show()
 
-
+    ss.catalog.listTables().show()
 
   }
 

@@ -2,9 +2,17 @@ import org.apache.spark.sql.{DataFrame, Dataset, Row, SparkSession}
 
 object AllAboutScalaApp extends App {
 
+  //Reading csv file
+
   val ss = SparkSession.builder().appName("AllAboutScalaApp").master("local[*]").getOrCreate()
 
-  val csvDf: DataFrame = ss.read.csv("employee.csv").toDF("name", "rollno", "address")
+  //val csvDf: DataFrame = ss.read.csv("employee.csv").toDF("name", "rollno", "address")
+
+  val csvDf: DataFrame = ss.read
+      .format("csv")
+    .option("inferSchema", "true")
+    .option("header", "true")
+    .load("employee_header.csv")
 
   val filterDf: Dataset[Row] = ss.read.csv("employee.csv").toDF("name", "rollno", "address").filter(("rollno < 500"))
 
@@ -25,7 +33,6 @@ object AllAboutScalaApp extends App {
   csvDf.join(filterDf, "name").show
 
   csvDf.join(filterDf, Seq("name"), "left_outer").show
-
 
   csvDf.filter("rollno < 500").filter("name like 'a%'").distinct().show()
 
